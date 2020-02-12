@@ -16,7 +16,7 @@ protected:
   AfterCallback afterCallback;
 
 public:
-  LocalMethod(ICPServer &server, std::string endpointP,
+  LocalMethod(ICPServer *server, std::string endpointP,
               std::function<void(TI inp, std::function<void(TO out)> res)> handlerP) : endpoint{endpointP},
                                                                                         handler{handlerP}
   {
@@ -27,7 +27,7 @@ public:
       write(msg);
     };
 
-    server.subscribe(
+    server->subscribe(
         endpoint, [this](auto dMsg, auto dWrite) {
           auto write = [this, dWrite](json msg) {
             this->afterCallback(msg, dWrite);
@@ -61,13 +61,13 @@ template <typename TI, typename TO>
 class RemoteMethod
 {
 protected:
-  ICPConnection &connection;
+  ICPConnection *connection;
   std::string endpoint;
   BeforeCallback beforeCallback;
   AfterCallback afterCallback;
 
 public:
-  RemoteMethod(ICPConnection &connectionP, std::string endpointP) : connection{connectionP},
+  RemoteMethod(ICPConnection *connectionP, std::string endpointP) : connection{connectionP},
                                                                       endpoint{endpointP}
   {
     beforeCallback = [](json msg, ICPWrite write, auto next) { next(msg); };
@@ -77,7 +77,7 @@ public:
 public:
   void call(TI inp, std::function<void(TO out)> rep)
   {
-    connection.send({{"endpoint", endpoint},
+    connection->send({{"endpoint", endpoint},
                      {"type", "call"},
                      {"params", inp}},
                     [rep](json m) {

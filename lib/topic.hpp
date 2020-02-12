@@ -43,7 +43,7 @@ public:
                   msg["endpoint"], [write](T val) {
                     
                     write({{"type", "publish"},
-                           {"msg", val}});
+                           {"value", val}});
                   });
             }
             else
@@ -90,7 +90,7 @@ template <typename T>
 class RemoteTopic
 {
 protected:
-  ICPConnection& connection;
+  ICPConnection* connection;
   std::string endpoint;
   BeforeCallback beforeCallback;
   AfterCallback afterCallback;
@@ -106,11 +106,11 @@ public:
 
   void subscribe(std::function<void (T val)> rep)
   {
-    connection.send({
+    connection->send({
       {"endpoint", endpoint},
       {"type", "subscribe"}
     }, [rep] (json m) {
-      rep(m["msg"]);
+      rep(m["value"]);
     });
   }
 };

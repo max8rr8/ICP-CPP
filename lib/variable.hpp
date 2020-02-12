@@ -23,7 +23,7 @@ protected:
   std::map<string, std::vector<std::function<void(T value)>>> subscribers;
 
 public:
-  LocalVariable(ICPServer &server, std::string endpointP, T defaultValueP) : endpoint{endpointP},
+  LocalVariable(ICPServer *server, std::string endpointP, T defaultValueP) : endpoint{endpointP},
                                                                              defaultValue{defaultValueP}
   {
     values[endpoint] = defaultValue;
@@ -34,7 +34,7 @@ public:
       write(msg);
     };
 
-    server.subscribe(
+    server->subscribe(
         endpoint, [this](auto dMsg, auto dWrite) {
           auto write = [this, dWrite](json msg) {
             this->afterCallback(msg, dWrite);
